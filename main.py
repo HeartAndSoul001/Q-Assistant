@@ -1,6 +1,7 @@
 import sys
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QDialog)
-from PyQt6.QtGui import (QIcon, QAction)
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox)
+from PyQt6.QtGui import (QPixmap, QAction)
+from PyQt6.QtCore import Qt
 
 
 class homepage(QMainWindow):
@@ -39,7 +40,17 @@ class homepage(QMainWindow):
         help_menu.addAction(QAction('检查更新', self))
                                     
     def showAbout(self):
-        about_us = QDialog(self)
+        about_us = QMessageBox(self)
+        about_us.setModal(True)
+        about_us.setWindowTitle("关于我们")
+        about_us.setWindowModality(Qt.WindowModality.ApplicationModal)
+        about_us.resize(300,300)
+        about_us_icon = QPixmap("./icons/about_us.png")
+        about_us.setIconPixmap(about_us_icon)
+        about_us.setText("宗旨：永不加班！！！\n\n"
+                         "作者：魏兆卿\n\n"
+                         "版本：alpha 0.0")
+        about_us.exec()
 
 
 def main():
