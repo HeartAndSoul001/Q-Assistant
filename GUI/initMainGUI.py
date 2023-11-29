@@ -59,31 +59,37 @@ class homepage(QMainWindow):
         leftMenuBg.setMinimumSize(QSize(100, 0))
         leftMenuBg.setMaximumSize(QSize(100, 16777215))
         
+        central_widget = QWidget()
+        content_label = QLabel(central_widget)
+        content_label.setText("hello!")
+        self.setCentralWidget(central_widget)
+
+
         ## IP地址转换
-        ip_conversion = QToolButton()
-        ip_conversion.setFont(font)
-        ip_conversion.setText(u"IP地址转换")
-        ip_conversion.setIcon(qta.icon('fa.retweet'))
-        ip_conversion.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        leftMenuBg.addWidget(ip_conversion)
+        ip_convert = QToolButton()
+        ip_convert.setFont(font)
+        ip_convert.setText(u"IP地址转换")
+        ip_convert.setIcon(qta.icon('fa.retweet'))
+        ip_convert.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        leftMenuBg.addWidget(ip_convert)
+        # show_IpConvert = QAction(self.ce)
+        ip_convert.clicked.connect(self.showIpConvert)
         # leftMenuBg.addSeparator()
 
         ## IP地址探测
-        ip_detection = QToolButton()
-        ip_detection.setFont(font)
-        ip_detection.setText(u"IP地址探测")
-        ip_detection.setIcon(qta.icon('fa.binoculars'))
-        ip_detection.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        leftMenuBg.addWidget(ip_detection)
+        ip_detect = QToolButton()
+        ip_detect.setFont(font)
+        ip_detect.setText(u"IP地址探测")
+        ip_detect.setIcon(qta.icon('fa.binoculars'))
+        ip_detect.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        leftMenuBg.addWidget(ip_detect)
+        ip_detect.clicked.connect(self.showIpDetect)
         # leftMenuBg.addSeparator()
 
 
 
 
-        # tool_bar.addAction(qta.icon('fa.retweet'),"IP地址转换")
-        # tool_bar.addSeparator()
-        # tool_bar.addAction(qta.icon('fa.binoculars'),"IP地址探测")
-        # tool_bar.addSeparator()
+
 
 
                                     
@@ -92,11 +98,57 @@ class homepage(QMainWindow):
         about_us.setWindowTitle("关于我们")
         about_us.setWindowModality(Qt.WindowModality.ApplicationModal)
         about_us.setFont(self.font())
-        # 设置弹窗宽和高为软件尺寸的25%
-        about_us.resize(int(self.width()*0.25),int(self.height()*0.25))
-        about_us.setIconPixmap(QPixmap("./icons/about_us.png")
-            .scaled(int(self.width()*0.08),int(self.height()*0.08),Qt.AspectRatioMode.KeepAspectRatioByExpanding,Qt.TransformationMode.SmoothTransformation))
+        # # 设置弹窗宽和高为软件尺寸的25%
+        about_us.resize(int(self.width()*0.25),int(self.height()*0.3))
+        about_us.setIconPixmap(QPixmap("./icons/about_us.png"))
         about_us.setText("宗旨：永不加班！\n\n"
                          "作者：wzq\n\n"
                          "版本：alpha 0.0")
         about_us.exec()
+
+    def showIpConvert(self):
+        content_widget = QWidget()
+        self.setCentralWidget(content_widget)
+        content_layout = QGridLayout()
+        content_widget.setLayout(content_layout)
+
+        # ip地址输入区域
+        ipInput_box = QWidget()
+        ipInput_box_layout = QGridLayout()
+        ipInput_box_layout.setSpacing(10)
+        ipInput_box.setLayout(ipInput_box_layout)
+        ## ip地址多行输入框
+        ipInput_tab = QTextEdit()
+        ## ip地址输入框功能按钮1----从剪贴板粘贴内容
+        ipInput_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
+        ## ip地址输入框功能按钮2----清除内容
+        ipInput_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
+
+        ipInput_box_layout.addWidget(ipInput_tab,0,0,1,2)
+        ipInput_box_layout.addWidget(ipInput_button_pastefromclipboard,1,0)
+        ipInput_box_layout.addWidget(ipInput_button_clean,1,1)
+
+        # ip地址输出区域
+        ipOutput_box = QWidget()
+        ipOutput_box_layout = QGridLayout()
+        ipOutput_box_layout.setSpacing(10)
+        ipOutput_box.setLayout(ipOutput_box_layout)
+        ## ip地址多行输出框
+        ipOutput_tab = QTextEdit()
+        ## ip地址输入框功能按钮1----复制到剪贴板
+        ipOutput_button_copytoclipboard = QPushButton(qta.icon('fa.copy'),"复制到剪贴板")
+        ## ip地址输入框功能按钮2----清除内容
+        ipOutput_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
+
+        ipOutput_box_layout.addWidget(ipOutput_tab,0,0,1,2)
+        ipOutput_box_layout.addWidget(ipOutput_button_copytoclipboard,1,0)
+        ipOutput_box_layout.addWidget(ipOutput_button_clean,1,1)
+
+        content_layout.addWidget(ipInput_box,0,0)
+        content_layout.addWidget(ipOutput_box,1,0)
+
+    def showIpDetect(self):
+        content_widget = QWidget()
+        content_label = QLabel(content_widget)
+        content_label.setText("hello!sdfsfdsfdsfdsdfsfdsfsfadsfadsfasfsdf")
+        self.setCentralWidget(content_widget)
