@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 import qtawesome as qta
-from ipaddress import ip_network
+from IPTOOL.iptool import ip_to_subnetlist
 
 class homepage(QMainWindow):
 
@@ -188,23 +188,26 @@ class homepage(QMainWindow):
         subnetsTable_output_widget.setHeaderLabels(['子网前缀','子网掩码','地址范围'])
         subnetsTable_output_widget.setColumnWidth(0,200)
         subnetsTable_output_widget.setColumnWidth(1,200)
-        # subnetsTable_output_widget.setColumnWidth(2,200)
         subnetsTable_output_widget.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
         subnetsTable_output_widget.setAlternatingRowColors(True)
 
-        test = QTreeWidgetItem()
-        test.setText(0,"1")
-        test.setText(1,"2")
-        test.setText(2,"3")
-        subnetsTable_output_widget.addTopLevelItem(test)
 
-        # subnetsTable_output_item_list = []
-        # for i in range(0,33,-1):
-        #     subnetsTable_output_item_list[i] = QTreeWidgetItem(subnetsTable_output_widget)
-        #     subnetsTable_output_item_list[i].setText(0,str(i))
-        #     subnetsTable_output_item_list[i].setText(1,str(ip_network(i).netmask()))
-        #     subnetsTable_output_item_list[i].setText(2,"hello")
-        #     subnetsTable_output_widget.addTopLevelItem(subnetsTable_output_item_list[i])
+        subnetsTable_output_item_list = []
+        subnetsTable_output_item_child_list = []
+        for i in range(32,-1,-1):
+            temp = QTreeWidgetItem(subnetsTable_output_widget)
+            subnetsTable_output_item_list.append(temp)
+            temp.setText(0,"/"+str(i))
+            temp.setText(1,"hello")
+            temp.setText(2,"hello")
+            temp.setTextAlignment(0,Qt.AlignmentFlag.AlignCenter)
+            temp.setTextAlignment(1,Qt.AlignmentFlag.AlignCenter)
+            temp.setTextAlignment(2,Qt.AlignmentFlag.AlignCenter)
+            subnet_id = QTreeWidgetItem()
+
+        subnetsTable_output_widget.addTopLevelItems(subnetsTable_output_item_list)
+
+    
 
     def showIpConvert(self):
         content_widget = QWidget()
