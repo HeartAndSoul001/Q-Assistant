@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 import qtawesome as qta
+from ipaddress import ip_network
 
 class homepage(QMainWindow):
 
@@ -21,9 +22,9 @@ class homepage(QMainWindow):
 
     def initUI(self):
         font = QFont()
-        font.setFamily(u"Segoe UI")
+        font.setFamily(u"Courier")
         font.setPointSize(10)
-        font.setBold(False)
+        font.setBold(True)
         font.setItalic(False)
         self.setFont(font)
 
@@ -53,17 +54,28 @@ class homepage(QMainWindow):
         leftMenuBg = QToolBar()
         self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, leftMenuBg)
         leftMenuBg.setMovable(False)
-        leftMenuBg.setFloatable(True)
+        leftMenuBg.setFloatable(False)
         leftMenuBg.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         leftMenuBg.setObjectName((u"导航栏"))
-        leftMenuBg.setMinimumSize(QSize(100, 0))
-        leftMenuBg.setMaximumSize(QSize(100, 16777215))
+        leftMenuBg.setIconSize(QSize(25,25))
+        leftMenuBg.setMinimumSize(QSize(80, 0))
+        leftMenuBg.setMaximumSize(QSize(120, 16777215))
+
         
         central_widget = QWidget()
         content_label = QLabel(central_widget)
         content_label.setText("hello!")
         self.setCentralWidget(central_widget)
 
+
+        ## IP子网计算器
+        subnetTable = QToolButton()
+        subnetTable.setFont(font)
+        subnetTable.setText(u"IP子网计算器")
+        subnetTable.setIcon(qta.icon('fa.calculator'))
+        subnetTable.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        leftMenuBg.addWidget(subnetTable)
+        subnetTable.clicked.connect(self.showSubnetTable)
 
         ## IP地址转换
         ip_convert = QToolButton()
@@ -105,6 +117,94 @@ class homepage(QMainWindow):
                          "作者：wzq\n\n"
                          "版本：alpha 0.0")
         about_us.exec()
+
+
+    def showSubnetTable(self):
+        subnet_font = QFont()
+        subnet_font.setFamily(u"Courier")
+        subnet_font.setPointSize(8)
+        subnet_font.setBold(True)
+        subnet_font.setItalic(False)
+
+        content_widget = QWidget()
+        self.setCentralWidget(content_widget)
+        content_layout = QVBoxLayout()
+        content_widget.setLayout(content_layout)
+
+        ip_input_widget = QWidget()
+        subnetsTable_output_widget = QTreeWidget()
+        content_layout.addWidget(ip_input_widget)
+        content_layout.addWidget(subnetsTable_output_widget)
+
+
+        ### ip地址单字段正则
+        my_validator = QRegularExpressionValidator(QRegularExpression("((2[0-4]\d)|(25[0-5])|(1\d{2})|(\d{1,2}))"))
+
+        ### ip输入框使用网格布局
+        ip_input_layout = QGridLayout()
+        ip_input_layout.setSpacing(0)
+        ip_input_widget.setLayout(ip_input_layout)
+
+        ### ipv4地址字段定义
+        ipv4_a =  QLineEdit()
+        ipv4_a.setPlaceholderText("192")
+        ipv4_a.setValidator(my_validator)
+        ipv4_a.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ipv4_a.setFont(subnet_font)
+        ipv4_a_dot = QLabel(".")
+        ipv4_a_dot.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ipv4_a_dot.setFont(subnet_font)
+        ipv4_b = QLineEdit()
+        ipv4_b.setPlaceholderText("168")
+        ipv4_b.setValidator(my_validator)
+        ipv4_b.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ipv4_b.setFont(subnet_font)
+        ipv4_b_dot = QLabel(".")
+        ipv4_b_dot.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ipv4_b_dot.setFont(subnet_font)
+        ipv4_c = QLineEdit()
+        ipv4_c.setPlaceholderText("0")
+        ipv4_c.setValidator(my_validator)
+        ipv4_c.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ipv4_c.setFont(subnet_font)
+        ipv4_c_dot = QLabel(".")
+        ipv4_c_dot.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ipv4_c_dot.setFont(subnet_font)
+        ipv4_d = QLineEdit()
+        ipv4_d.setPlaceholderText("1")
+        ipv4_d.setValidator(my_validator)
+        ipv4_d.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ipv4_d.setFont(subnet_font)
+
+        ip_input_layout.addWidget(ipv4_a,0,0,1,6)
+        ip_input_layout.addWidget(ipv4_a_dot,0,7)
+        ip_input_layout.addWidget(ipv4_b,0,8,1,6)
+        ip_input_layout.addWidget(ipv4_b_dot,0,14)
+        ip_input_layout.addWidget(ipv4_c,0,15,1,6)
+        ip_input_layout.addWidget(ipv4_c_dot,0,21)
+        ip_input_layout.addWidget(ipv4_d,0,22,1,6)
+
+        subnetsTable_output_widget.setColumnCount(3)
+        subnetsTable_output_widget.setHeaderLabels(['子网前缀','子网掩码','地址范围'])
+        subnetsTable_output_widget.setColumnWidth(0,200)
+        subnetsTable_output_widget.setColumnWidth(1,200)
+        # subnetsTable_output_widget.setColumnWidth(2,200)
+        subnetsTable_output_widget.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        subnetsTable_output_widget.setAlternatingRowColors(True)
+
+        test = QTreeWidgetItem()
+        test.setText(0,"1")
+        test.setText(1,"2")
+        test.setText(2,"3")
+        subnetsTable_output_widget.addTopLevelItem(test)
+
+        # subnetsTable_output_item_list = []
+        # for i in range(0,33,-1):
+        #     subnetsTable_output_item_list[i] = QTreeWidgetItem(subnetsTable_output_widget)
+        #     subnetsTable_output_item_list[i].setText(0,str(i))
+        #     subnetsTable_output_item_list[i].setText(1,str(ip_network(i).netmask()))
+        #     subnetsTable_output_item_list[i].setText(2,"hello")
+        #     subnetsTable_output_widget.addTopLevelItem(subnetsTable_output_item_list[i])
 
     def showIpConvert(self):
         content_widget = QWidget()
@@ -150,6 +250,7 @@ class homepage(QMainWindow):
         ipOutput_box.setLayout(ipOutput_box_layout)
         ## ip地址多行输出框
         ipOutput_tab = QTextEdit()
+        ipOutput_tab.setReadOnly(True)
         ## ip地址输入框功能按钮1----复制到剪贴板
         ipOutput_button_copytoclipboard = QPushButton(qta.icon('fa.copy'),"复制内容到剪贴板")
         ## ip地址输入框功能按钮2----清除内容
@@ -162,13 +263,37 @@ class homepage(QMainWindow):
 
         # 功能选项区域
         func_box =QWidget()
-
-
+        func_box_layout = QGridLayout()
+        func_box_layout.setSpacing(10)
+        func_box.setLayout(func_box_layout)
 
         content_layout.addWidget(func_box,0,0,1,1)
         content_layout.addWidget(ipInput_box1,0,1,2,2)
         content_layout.addWidget(ipInput_box2,0,3,2,2)
         content_layout.addWidget(ipOutput_box,2,1,2,4)
+
+
+        ## 功能按钮1(地址范围-->CIDR)
+        iprange_to_cidr = QPushButton()
+        iprange_to_cidr.setText("地址范围 --> CIDR")
+        ## 功能按钮2(CIDR-->地址范围)
+        cidr_to_iprange = QPushButton()
+        cidr_to_iprange.setText("CIDR --> 地址范围")
+        ## 功能按钮3(IP地址集合--交集)
+        ipset_And = QPushButton()
+        ipset_And.setText("IP地址集合--交集")
+        ## 功能按钮4(IP地址集合--并集)
+        ipset_Or = QPushButton()
+        ipset_Or.setText("IP地址集合--并集")
+        ## 功能按钮5(IP地址集合--差集)
+        ipset_Not = QPushButton()
+        ipset_Not.setText("IP地址集合--差集")
+
+        func_box_layout.addWidget(iprange_to_cidr,0,0)
+        func_box_layout.addWidget(cidr_to_iprange,1,0)
+        func_box_layout.addWidget(ipset_And,2,0)
+        func_box_layout.addWidget(ipset_Or,3,0)
+        func_box_layout.addWidget(ipset_Not,4,0)
 
     def showIpDetect(self):
         content_widget = QWidget()
