@@ -3,7 +3,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 import qtawesome as qta
 from IPTOOL.iptool import ip_to_subnetlist
-from GUI.DIYWidgets import Ip_input_widget
+from GUI.DIYWidgets import IpInputWidget, SubnetsTableWidget
 
 class homepage(QMainWindow):
 
@@ -132,84 +132,11 @@ class homepage(QMainWindow):
         content_layout = QVBoxLayout()
         content_widget.setLayout(content_layout)
 
-        ip_input_widget = Ip_input_widget(content_widget)
-        subnetsTable_output_widget = QTreeWidget()
+        ip_input_widget = IpInputWidget(content_widget)
+        subnetsTable_output_widget = SubnetsTableWidget(content_widget)
         content_layout.addWidget(ip_input_widget)
         content_layout.addWidget(subnetsTable_output_widget)
-
-
-        ### ip地址单字段正则
-        # ip_validator = QRegularExpressionValidator(QRegularExpression("((2[0-4]\d)|(25[0-5])|(1\d{2})|(\d{1,2}))"))
-
-        ### ip输入框使用网格布局
-        # ip_input_layout = QGridLayout()
-        # ip_input_layout.setSpacing(0)
-        # ip_input_widget.setLayout(ip_input_layout)
-        # ip_input_line.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # ip_input_line.setInputMask("000.000.000.000;_")
-        # ip_input_line.setValidator(ip_validator)
-
-        ### ipv4地址字段定义
-        # ipv4_a =  QLineEdit()
-        # ipv4_a.setPlaceholderText("192")
-        # ipv4_a.setValidator(my_validator)
-        # ipv4_a.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # ipv4_a.setFont(subnet_font)
-        # ipv4_a_dot = QLabel(".")
-        # ipv4_a_dot.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # ipv4_a_dot.setFont(subnet_font)
-        # ipv4_b = QLineEdit()
-        # ipv4_b.setPlaceholderText("168")
-        # ipv4_b.setValidator(my_validator)
-        # ipv4_b.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # ipv4_b.setFont(subnet_font)
-        # ipv4_b_dot = QLabel(".")
-        # ipv4_b_dot.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # ipv4_b_dot.setFont(subnet_font)
-        # ipv4_c = QLineEdit()
-        # ipv4_c.setPlaceholderText("0")
-        # ipv4_c.setValidator(my_validator)
-        # ipv4_c.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # ipv4_c.setFont(subnet_font)
-        # ipv4_c_dot = QLabel(".")
-        # ipv4_c_dot.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # ipv4_c_dot.setFont(subnet_font)
-        # ipv4_d = QLineEdit()
-        # ipv4_d.setPlaceholderText("1")
-        # ipv4_d.setValidator(my_validator)
-        # ipv4_d.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # ipv4_d.setFont(subnet_font)
-
-        # ip_input_layout.addWidget(ipv4_a,0,0,1,6)
-        # ip_input_layout.addWidget(ipv4_a_dot,0,7)
-        # ip_input_layout.addWidget(ipv4_b,0,8,1,6)
-        # ip_input_layout.addWidget(ipv4_b_dot,0,14)
-        # ip_input_layout.addWidget(ipv4_c,0,15,1,6)
-        # ip_input_layout.addWidget(ipv4_c_dot,0,21)
-        # ip_input_layout.addWidget(ipv4_d,0,22,1,6)
-
-        subnetsTable_output_widget.setColumnCount(3)
-        subnetsTable_output_widget.setHeaderLabels(['子网前缀','子网掩码','地址范围'])
-        subnetsTable_output_widget.setColumnWidth(0,200)
-        subnetsTable_output_widget.setColumnWidth(1,200)
-        subnetsTable_output_widget.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
-        subnetsTable_output_widget.setAlternatingRowColors(True)
-
-
-        subnetsTable_output_item_list = []
-        subnetsTable_output_item_child_list = []
-        for i in range(32,-1,-1):
-            temp = QTreeWidgetItem(subnetsTable_output_widget)
-            subnetsTable_output_item_list.append(temp)
-            temp.setText(0,"/"+str(i))
-            temp.setText(1,"hello")
-            temp.setText(2,"hello")
-            temp.setTextAlignment(0,Qt.AlignmentFlag.AlignCenter)
-            temp.setTextAlignment(1,Qt.AlignmentFlag.AlignCenter)
-            temp.setTextAlignment(2,Qt.AlignmentFlag.AlignCenter)
-            subnet_id = QTreeWidgetItem()
-
-        subnetsTable_output_widget.addTopLevelItems(subnetsTable_output_item_list)
+        ip_input_widget.ipCompleted.connect(subnetsTable_output_widget.update_table)
 
     
 

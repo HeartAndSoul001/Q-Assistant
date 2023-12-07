@@ -1,76 +1,111 @@
-from PyQt6.QtCore import (QRegularExpression,Qt)
-from PyQt6.QtWidgets import (QWidget,QLineEdit,QGridLayout,QLabel)
-from PyQt6.QtGui import (QRegularExpressionValidator,QFont)
+from PyQt6.QtCore import Qt, QEvent, QRegularExpression, pyqtSignal
+from PyQt6.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, QTreeWidget, QTreeWidgetItem, QAbstractItemView
+from PyQt6.QtGui import QRegularExpressionValidator
+from IPTOOL.iptool import ip_to_subnetlist
 
-
-
-
-
-class Ip_input_widget(QWidget):
-
-    ip_a = "192"
-    ip_b = "168"
-    ip_c = "0"
-    ip_d = "1"
-
+class IpInputWidget(QWidget):
+    # 定义ipv4地址的4个段
+    ip = ["192","168","0","1"]
+    # 定义ipv4地址某一段的校验正则
     ip_validator = QRegularExpressionValidator(QRegularExpression("((2[0-4]\d)|(25[0-5])|(1\d{2})|(\d{1,2}))"))
 
-    def __init__(self, parent: QWidget | None = ...) -> None:
+    # 是否输入完成
+    ipCompleted = pyqtSignal(str)
+
+
+    def __init__(self, parent=None):
         super().__init__(parent)
         
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QHBoxLayout()
+
+        # 创建四个 QLineEdit 分别用于输入 IPv4 地址的四个段
+        self.segment_inputs = [IpLineEdit() for _ in range(4)]
+
+        for index, input_field in enumerate(self.segment_inputs):
+            input_field.setMaxLength(3)  # 设置最大长度为3
+            input_field.setValidator(self.ip_validator)
+            input_field.setPlaceholderText(self.ip[index])  # 设置初始字段
+            input_field.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            input_field.installEventFilter(self)  # 安装事件过滤器
+
+            layout.addWidget(input_field)
+
+            if index < 3:
+                # 在每两个输入框之间添加一个点，用 QLabel 实现
+                dot_label = QLabel(".")
+                dot_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                layout.addWidget(dot_label)
+
+        self.setLayout(layout)
+
+    def eventFilter(self, obj, event):
+        index = self.segment_inputs.index(obj)
+
+        # 如果按下的键是点字符 '.', 移动焦点到下一个输入框
+        if index < 3 and event.type() == QEvent.Type.KeyPress and event.text() == ".":
+            self.segment_inputs[index + 1].setFocus()
+
+        # 如果按下的键是回车键，清除当前输入框的焦点
+        elif index == 3 and event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Return:
+            self.segment_inputs[index].clearFocus()
+
+        # 如果所有输入框都已经输入内容，检查是否全部失去焦点
+        if all(input_field.text() for input_field in self.segment_inputs):
+            all_inputs_lost_focus = all(not input_field.hasFocus() for input_field in self.segment_inputs)
+            if all_inputs_lost_focus:
+                ip_address = ".".join(input_field.text() for input_field in self.segment_inputs)
+                self.ipCompleted.emit(ip_address)
+
+        return super().eventFilter(obj, event)
 
 
+class IpLineEdit(QLineEdit):
+    pass
 
+class SubnetsTableWidget(QTreeWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.init_ui()
 
-
-
-        subnet_font = QFont()
-
-        ip_input_layout = QGridLayout()
-
-        subnet_font.setFamily(u"Courier")
-        subnet_font.setPointSize(8)
-        subnet_font.setBold(True)
-        subnet_font.setItalic(False)
-
-        ipv4_a_input =  QLineEdit()
-        ipv4_a_input.setPlaceholderText(self.ip_a)
-        ipv4_a_input.setValidator(self.ip_validator)
-        ipv4_a_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        ipv4_a_input.setFont(subnet_font)
+    def init_ui(self):
+        self.setColumnCount(3)
+        self.setHeaderLabels(['子网前缀','子网掩码','反掩码','地址范围','子网id','广播地址','地址数量'])
+        self.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setAlternatingRowColors(True)
+        self.addTopLevelItems([QTreeWidgetItem(self) for i in range(32,-1,-1)])
+        self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.viewport().installEventFilter(self)
+        self.update_table("192.168.0.1")
         
-        ipv4_a_dot = QLabel(".")
-        ipv4_a_dot.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        ipv4_a_dot.setFont(subnet_font)
-        ipv4_b_input =  QLineEdit()
-        ipv4_b_input.setPlaceholderText(self.ip_b)
-        ipv4_b_input.setValidator(self.ip_validator)
-        ipv4_b_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        ipv4_b_input.setFont(subnet_font)
-        ipv4_b_dot = QLabel(".")
-        ipv4_b_dot.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        ipv4_b_dot.setFont(subnet_font)
-        ipv4_c_input =  QLineEdit()
-        ipv4_c_input.setPlaceholderText(self.ip_c)
-        ipv4_c_input.setValidator(self.ip_validator)
-        ipv4_c_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        ipv4_c_input.setFont(subnet_font)
-        ipv4_c_dot = QLabel(".")
-        ipv4_c_dot.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        ipv4_c_dot.setFont(subnet_font)
-        ipv4_d_input =  QLineEdit()
-        ipv4_d_input.setPlaceholderText(self.ip_d)
-        ipv4_d_input.setValidator(self.ip_validator)
-        ipv4_d_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        ipv4_d_input.setFont(subnet_font)
-        # ipv4_d_input.end(True)
-        ip_input_layout.setSpacing(0)
-        self.setLayout(ip_input_layout)
-        ip_input_layout.addWidget(ipv4_a_input,0,0,1,6)
-        ip_input_layout.addWidget(ipv4_a_dot,0,7)
-        ip_input_layout.addWidget(ipv4_b_input,0,8,1,6)
-        ip_input_layout.addWidget(ipv4_b_dot,0,14)
-        ip_input_layout.addWidget(ipv4_c_input,0,15,1,6)
-        ip_input_layout.addWidget(ipv4_c_dot,0,21)
-        ip_input_layout.addWidget(ipv4_d_input,0,22,1,6)
 
+    def update_table(self, ip_address):
+        subnetsTableList = ip_to_subnetlist(ip_address)
+        for top_index in range(self.topLevelItemCount()-1):
+            top_item = self.topLevelItem(top_index)
+            for col in range(self.columnCount()):
+                top_item.setText(col,subnetsTableList[top_index][col])
+                top_item.setTextAlignment(col,Qt.AlignmentFlag.AlignCenter)
+                self.resizeColumnToContents(col)
+            
+            
+    def eventFilter(self, obj, event):
+        if obj and event.type() == QEvent.Type.MouseButtonPress:
+            if event.button() == Qt.MouseButton.LeftButton:
+                if isinstance(self.sender(), QTreeWidget):
+                    item_at_pos = self.sender().itemAt(event.pos())
+                    if item_at_pos:
+                        selected_columns = []
+                        for col in range(item_at_pos.columnCount()):
+                            selected_columns.append(item_at_pos.text(col))
+
+                        text = "\t".join(selected_columns)
+                        mime_data = QMimeData()
+                        mime_data.setText(text)
+
+                        clipboard = QApplication.clipboard()
+                        clipboard.setMimeData(mime_data)
+
+        return super().eventFilter(obj, event)

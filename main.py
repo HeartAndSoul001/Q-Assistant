@@ -5,7 +5,6 @@ def main():
 
     app = QApplication(sys.argv)
     ex = homepage()
-
     ex.show()
     sys.exit(app.exec())
 

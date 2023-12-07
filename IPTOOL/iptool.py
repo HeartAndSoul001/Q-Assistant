@@ -14,5 +14,5 @@ def ip_to_subnetlist(ip_str):
         subnet_id = str(ip_network.network)
         broadcast_ip = str(ip_network.broadcast)
         network_size = ip_network.size
-        subnetlist.append([i,mask,host_mask,iprange,subnet_id,broadcast_ip,network_size])
+        subnetlist.append([str(i),mask,host_mask,iprange,subnet_id,broadcast_ip,str(network_size)])
     return subnetlist
