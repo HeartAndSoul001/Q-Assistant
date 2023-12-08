@@ -75,6 +75,7 @@ class homepage(QMainWindow):
         subnetTable.setText(u"IP子网计算器")
         subnetTable.setIcon(qta.icon('fa.calculator'))
         subnetTable.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        subnetTable.setFixedHeight(50)
         leftMenuBg.addWidget(subnetTable)
         subnetTable.clicked.connect(self.showSubnetTable)
 
@@ -84,6 +85,7 @@ class homepage(QMainWindow):
         ip_convert.setText(u"IP地址转换")
         ip_convert.setIcon(qta.icon('fa.retweet'))
         ip_convert.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        ip_convert.setFixedHeight(50)
         leftMenuBg.addWidget(ip_convert)
         # show_IpConvert = QAction(self.ce)
         ip_convert.clicked.connect(self.showIpConvert)
@@ -95,6 +97,7 @@ class homepage(QMainWindow):
         ip_detect.setText(u"IP地址探测")
         ip_detect.setIcon(qta.icon('fa.binoculars'))
         ip_detect.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        ip_detect.setFixedHeight(50)
         leftMenuBg.addWidget(ip_detect)
         ip_detect.clicked.connect(self.showIpDetect)
         # leftMenuBg.addSeparator()
@@ -113,10 +116,12 @@ class homepage(QMainWindow):
         about_us.setFont(self.font())
         # # 设置弹窗宽和高为软件尺寸的25%
         about_us.resize(int(self.width()*0.25),int(self.height()*0.3))
-        about_us.setIconPixmap(QPixmap("./icons/about_us.png"))
+        about_us.setIconPixmap(QPixmap("./icons/about_us.png")
+                               .scaled(int(self.width()*0.05),int(self.height()*0.08), Qt.KeepAspectRatio))
         about_us.setText("宗旨：永不加班！\n\n"
                          "作者：wzq\n\n"
                          "版本：alpha 0.0")
+        about_us
         about_us.exec()
 
 

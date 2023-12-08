@@ -74,6 +74,7 @@ class SubnetsTableWidget(QTableWidget):
         self.setRowCount(33)
         self.setColumnCount(7)
         self.setHorizontalHeaderLabels(['子网前缀','子网掩码','反掩码','地址范围','子网id','广播地址','地址数量'])
+        self.horizontalHeader().setStyleSheet("QHeaderView::section{background:grey;}")
         self.setShowGrid(False)
         self.verticalHeader().setHidden(True)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
