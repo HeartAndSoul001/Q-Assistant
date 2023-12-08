@@ -136,7 +136,8 @@ class homepage(QMainWindow):
         subnetsTable_output_widget = SubnetsTableWidget(content_widget)
         content_layout.addWidget(ip_input_widget)
         content_layout.addWidget(subnetsTable_output_widget)
-        ip_input_widget.ipCompleted.connect(subnetsTable_output_widget.update_table)
+        
+        # ip_input_widget.ipCompleted.connect(subnetsTable_output_widget.update_table)
 
     
 

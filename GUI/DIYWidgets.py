@@ -1,5 +1,5 @@
-from PyQt6.QtCore import Qt, QEvent, QRegularExpression, pyqtSignal
-from PyQt6.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, QTreeWidget, QTreeWidgetItem, QAbstractItemView
+from PyQt6.QtCore import Qt, QEvent, QRegularExpression, pyqtSignal, QItemSelectionModel
+from PyQt6.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, QTreeWidget, QTreeWidgetItem, QAbstractItemView, QTableWidget, QHeaderView
 from PyQt6.QtGui import QRegularExpressionValidator
 from IPTOOL.iptool import ip_to_subnetlist
 
@@ -65,20 +65,33 @@ class IpInputWidget(QWidget):
 class IpLineEdit(QLineEdit):
     pass
 
-class SubnetsTableWidget(QTreeWidget):
+class SubnetsTableWidget(QTableWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.init_ui()
 
     def init_ui(self):
-        self.setColumnCount(3)
-        self.setHeaderLabels(['子网前缀','子网掩码','反掩码','地址范围','子网id','广播地址','地址数量'])
-        self.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setRowCount(33)
+        self.setColumnCount(7)
+        self.setHorizontalHeaderLabels(['子网前缀','子网掩码','反掩码','地址范围','子网id','广播地址','地址数量'])
+        self.setShowGrid(False)
+        self.verticalHeader().setHidden(True)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.resizeColumnsToContents()
         self.setAlternatingRowColors(True)
-        self.addTopLevelItems([QTreeWidgetItem(self) for i in range(32,-1,-1)])
-        self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.viewport().installEventFilter(self)
-        self.update_table("192.168.0.1")
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        # self.setColumnCount(3)
+        # self.setHeaderLabels(['子网前缀','子网掩码','反掩码','地址范围','子网id','广播地址','地址数量'])
+        # self.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        # self.setAlternatingRowColors(True)
+        # subnetsTableList = []
+        # for i in range(32,-1,-1):
+        #     top_item = QTreeWidgetItem(self)
+        #     top_item.setFlags(Qt.ItemIsEnabled|Qt.ItemIsUserCheckable)
+        #     subnetsTableList.append(top_item)
+        # self.addTopLevelItems(subnetsTableList)
+        
+        # self.update_table("192.168.0.1")
         
 
     def update_table(self, ip_address):
@@ -89,23 +102,3 @@ class SubnetsTableWidget(QTreeWidget):
                 top_item.setText(col,subnetsTableList[top_index][col])
                 top_item.setTextAlignment(col,Qt.AlignmentFlag.AlignCenter)
                 self.resizeColumnToContents(col)
-            
-            
-    def eventFilter(self, obj, event):
-        if obj and event.type() == QEvent.Type.MouseButtonPress:
-            if event.button() == Qt.MouseButton.LeftButton:
-                if isinstance(self.sender(), QTreeWidget):
-                    item_at_pos = self.sender().itemAt(event.pos())
-                    if item_at_pos:
-                        selected_columns = []
-                        for col in range(item_at_pos.columnCount()):
-                            selected_columns.append(item_at_pos.text(col))
-
-                        text = "\t".join(selected_columns)
-                        mime_data = QMimeData()
-                        mime_data.setText(text)
-
-                        clipboard = QApplication.clipboard()
-                        clipboard.setMimeData(mime_data)
-
-        return super().eventFilter(obj, event)
