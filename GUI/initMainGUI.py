@@ -29,6 +29,7 @@ class homepage(QMainWindow):
         font.setItalic(False)
         self.setFont(font)
 
+
         # 菜单栏
         menubar = self.menuBar()
         menubar.setFont(QFont())
@@ -51,55 +52,80 @@ class homepage(QMainWindow):
         help_menu.addAction(about_us)
         help_menu.addAction(QAction('检查更新', self))
 
-        # 工具栏
-        leftMenuBg = QToolBar()
-        self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, leftMenuBg)
-        leftMenuBg.setMovable(False)
-        leftMenuBg.setFloatable(False)
+
+
+
+        leftMenuBg = QToolBar('导航栏')
+        leftMenuBg.setOrientation(Qt.Orientation.Vertical)
+        leftMenuBg.setIconSize(QSize(40, 40))  # 设置图标大小
         leftMenuBg.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        leftMenuBg.setObjectName((u"导航栏"))
-        leftMenuBg.setIconSize(QSize(25,25))
-        leftMenuBg.setMinimumSize(QSize(80, 0))
-        leftMenuBg.setMaximumSize(QSize(120, 16777215))
+        self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, leftMenuBg)
+
+        leftMenuBox = QTreeWidget(leftMenuBg)
+        
+        # self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, leftMenuBg)
+        # leftMenuBg.setMovable(False)
+        # leftMenuBg.setFloatable(False)
+        # leftMenuBg.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        # leftMenuBg.setObjectName((u"导航栏"))
+        # leftMenuBg.setIconSize(QSize(25,25))
+        # leftMenuBg.setMinimumSize(QSize(80, 0))
+        # leftMenuBg.setMaximumSize(QSize(120, 16777215))
 
         
-        central_widget = QWidget()
-        content_label = QLabel(central_widget)
-        content_label.setText("hello!")
-        self.setCentralWidget(central_widget)
+        # central_widget = QWidget()
+        # content_label = QLabel(central_widget)
+        # content_label.setText("hello!")
+        # self.setCentralWidget(central_widget)
 
 
         ## IP子网计算器
-        subnetTable = QToolButton()
-        subnetTable.setFont(font)
-        subnetTable.setText(u"IP子网计算器")
-        subnetTable.setIcon(qta.icon('fa.calculator'))
-        subnetTable.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        subnetTable.setFixedHeight(50)
-        leftMenuBg.addWidget(subnetTable)
-        subnetTable.clicked.connect(self.showSubnetTable)
+        # subnetTable = QToolButton()
+        # subnetTable.setFont(font)
+        # subnetTable.setText(u"IP子网计算器")
+        # subnetTable.setIcon(qta.icon('fa.calculator'))
+        # subnetTable.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        # subnetTable.setFixedHeight(50)
+        # # leftMenuBg.addWidget(subnetTable)
+        # subnetTable.clicked.connect(self.showSubnetTable)
 
-        ## IP地址转换
-        ip_convert = QToolButton()
-        ip_convert.setFont(font)
-        ip_convert.setText(u"IP地址转换")
-        ip_convert.setIcon(qta.icon('fa.retweet'))
-        ip_convert.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        ip_convert.setFixedHeight(50)
-        leftMenuBg.addWidget(ip_convert)
-        # show_IpConvert = QAction(self.ce)
-        ip_convert.clicked.connect(self.showIpConvert)
-        # leftMenuBg.addSeparator()
+        # ## IP地址处理
+        # ip_handle = QToolButton()
+        # ip_handle.setFont(font)
+        # ip_handle.setText(u"IP地址处理")
+        # ip_handle.setIcon(qta.icon('fa5s.tools'))
+        # ip_handle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        # ip_handle.setFixedHeight(50)
+        # # leftMenuBg.addWidget(ip_handle)
+
+        # ### IP地址处理子菜单
+        # ip_handle_menu = QMenu()
+
+        # ### IP地址格式转换
+        # ip_format_trans = QAction(qta.icon('fa.retweet'),"格式转换")
+        # ip_handle_menu.addAction(ip_format_trans)
+        # ip_handle_menu.addSeparator()
+        # ### IP地址段运算
+        # ip_subnets_calcu = QAction(qta.icon('fa.gg'),"子网运算")
+        # ip_handle_menu.addAction(ip_subnets_calcu)
+        # ip_handle.setMenu(ip_handle_menu)
+
+        # # 设置 QToolButton 的弹出模式
+        # ip_handle.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        # # 设置 QToolButton 的下拉菜单
+        # ip_handle.setMenu(ip_handle_menu)
+
+
 
         ## IP地址探测
-        ip_detect = QToolButton()
-        ip_detect.setFont(font)
-        ip_detect.setText(u"IP地址探测")
-        ip_detect.setIcon(qta.icon('fa.binoculars'))
-        ip_detect.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        ip_detect.setFixedHeight(50)
-        leftMenuBg.addWidget(ip_detect)
-        ip_detect.clicked.connect(self.showIpDetect)
+        # ip_detect = QToolButton()
+        # ip_detect.setFont(font)
+        # ip_detect.setText(u"IP地址探测")
+        # ip_detect.setIcon(qta.icon('fa.binoculars'))
+        # ip_detect.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        # ip_detect.setFixedHeight(50)
+        # leftMenuBg.addWidget(ip_detect)
+        # ip_detect.clicked.connect(self.showIpDetect)
         # leftMenuBg.addSeparator()
 
 
@@ -142,7 +168,7 @@ class homepage(QMainWindow):
         content_layout.addWidget(ip_input_widget)
         content_layout.addWidget(subnetsTable_output_widget)
         
-        # ip_input_widget.ipCompleted.connect(subnetsTable_output_widget.update_table)
+        ip_input_widget.ipCompleted.connect(subnetsTable_output_widget.update_table)
 
     
 

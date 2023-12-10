@@ -1,8 +1,11 @@
-from PyQt6.QtCore import Qt, QEvent, QRegularExpression, pyqtSignal, QItemSelectionModel
-from PyQt6.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, QTreeWidget, QTreeWidgetItem, QAbstractItemView, QTableWidget, QHeaderView
+from PyQt6.QtCore import Qt, QEvent, QRegularExpression, pyqtSignal, QMimeData
+from PyQt6.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, QAbstractItemView, QTableWidget, QHeaderView, QTableWidgetItem, QToolTip
 from PyQt6.QtGui import QRegularExpressionValidator
 from IPTOOL.iptool import ip_to_subnetlist
+from GUI.initMainGUI import QApplication
 
+
+# IP地址输入框
 class IpInputWidget(QWidget):
     # 定义ipv4地址的4个段
     ip = ["192","168","0","1"]
@@ -65,12 +68,15 @@ class IpInputWidget(QWidget):
 class IpLineEdit(QLineEdit):
     pass
 
+
+# 子网显示框
 class SubnetsTableWidget(QTableWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.init_ui()
 
     def init_ui(self):
+        
         self.setRowCount(33)
         self.setColumnCount(7)
         self.setHorizontalHeaderLabels(['子网前缀','子网掩码','反掩码','地址范围','子网id','广播地址','地址数量'])
@@ -80,26 +86,34 @@ class SubnetsTableWidget(QTableWidget):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.resizeColumnsToContents()
         self.setAlternatingRowColors(True)
-        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        # self.setColumnCount(3)
-        # self.setHeaderLabels(['子网前缀','子网掩码','反掩码','地址范围','子网id','广播地址','地址数量'])
-        # self.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
-        # self.setAlternatingRowColors(True)
-        # subnetsTableList = []
-        # for i in range(32,-1,-1):
-        #     top_item = QTreeWidgetItem(self)
-        #     top_item.setFlags(Qt.ItemIsEnabled|Qt.ItemIsUserCheckable)
-        #     subnetsTableList.append(top_item)
-        # self.addTopLevelItems(subnetsTableList)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)     
+        # 设置单元格被选中以后的背景颜色
+        self.setStyleSheet("QTableWidget::item:selected { background-color: lightblue; }")
+        # 设置默认显示信息
+        self.update_table("192.168.0.1")
+        # 设置捕捉双击事件
+        self.itemDoubleClicked.connect(self.copyContentToClipboard)
         
-        # self.update_table("192.168.0.1")
-        
-
+    # 根据输入地址进行实时显示子网
     def update_table(self, ip_address):
         subnetsTableList = ip_to_subnetlist(ip_address)
-        for top_index in range(self.topLevelItemCount()-1):
-            top_item = self.topLevelItem(top_index)
-            for col in range(self.columnCount()):
-                top_item.setText(col,subnetsTableList[top_index][col])
-                top_item.setTextAlignment(col,Qt.AlignmentFlag.AlignCenter)
-                self.resizeColumnToContents(col)
+        for i in range(0,32):
+            for j in range(0,7):
+                item = QTableWidgetItem(subnetsTableList[i][j])
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                self.setItem(i,j,item)
+        
+    # 捕捉双击事件，将内容复制到剪贴板
+    def copyContentToClipboard(self, item):
+        # 捕捉双击事件，将内容复制到剪贴板
+        clipboard = QApplication.clipboard()
+        mime_data = QMimeData()
+        mime_data.setText(item.text())
+        clipboard.setMimeData(mime_data)
+
+        # 显示气泡提示信息
+        rect = self.visualItemRect(item)
+        # 将局部坐标转换为全局坐标
+        global_pos = self.mapToGlobal(rect.topRight())
+        QToolTip.showText(global_pos, '已复制到剪贴板', self)
+
