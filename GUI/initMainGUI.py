@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import *
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
+from PySide6.QtWidgets import *
+from PySide6.QtGui import *
+from PySide6.QtCore import *
 import qtawesome as qta
 from IPTOOL.iptool import ip_to_subnetlist
 from GUI.DIYWidgets import IpInputWidget, SubnetsTableWidget

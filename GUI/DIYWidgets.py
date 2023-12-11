@@ -1,6 +1,6 @@
-from PyQt6.QtCore import Qt, QEvent, QRegularExpression, pyqtSignal, QMimeData
-from PyQt6.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, QAbstractItemView, QTableWidget, QHeaderView, QTableWidgetItem, QToolTip
-from PyQt6.QtGui import QRegularExpressionValidator
+from PySide6.QtCore import Qt, QEvent, QRegularExpression, Signal, QMimeData
+from PySide6.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, QAbstractItemView, QTableWidget, QHeaderView, QTableWidgetItem, QToolTip
+from PySide6.QtGui import QRegularExpressionValidator
 from IPTOOL.iptool import ip_to_subnetlist
 from GUI.initMainGUI import QApplication
 
@@ -13,7 +13,7 @@ class IpInputWidget(QWidget):
     ip_validator = QRegularExpressionValidator(QRegularExpression("((2[0-4]\d)|(25[0-5])|(1\d{2})|(\d{1,2}))"))
 
     # 是否输入完成
-    ipCompleted = pyqtSignal(str)
+    ipCompleted = Signal(str)
 
 
     def __init__(self, parent=None):
