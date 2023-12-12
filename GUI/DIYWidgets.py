@@ -1,8 +1,9 @@
-from PySide6.QtCore import Qt, QEvent, QRegularExpression, Signal, QMimeData
-from PySide6.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, QAbstractItemView, QTableWidget, QHeaderView, QTableWidgetItem, QToolTip
-from PySide6.QtGui import QRegularExpressionValidator
-from IPTOOL.iptool import ip_to_subnetlist
-from GUI.initMainGUI import QApplication
+from PySide6.QtCore import (Qt, QEvent, QRegularExpression, Signal, QMimeData)
+from PySide6.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QLabel, QAbstractItemView, QTableWidget, QHeaderView, QTableWidgetItem, QToolTip, QTabWidget, QGridLayout)
+from PySide6.QtGui import (QRegularExpressionValidator)
+from IPTOOL.iptool import (ip_to_subnetlist)
+from GUI.initMainGUI import (QApplication)
+import qtawesome as qta
 
 
 # IP地址输入框
@@ -32,7 +33,9 @@ class IpInputWidget(QWidget):
             input_field.setValidator(self.ip_validator)
             input_field.setPlaceholderText(self.ip[index])  # 设置初始字段
             input_field.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            input_field.installEventFilter(self)  # 安装事件过滤器
+            input_field.installEventFilter(self)  
+            
+
 
             layout.addWidget(input_field)
 
@@ -46,7 +49,6 @@ class IpInputWidget(QWidget):
 
     def eventFilter(self, obj, event):
         index = self.segment_inputs.index(obj)
-
         # 如果按下的键是点字符 '.', 移动焦点到下一个输入框
         if index < 3 and event.type() == QEvent.Type.KeyPress and event.text() == ".":
             self.segment_inputs[index + 1].setFocus()
@@ -61,8 +63,9 @@ class IpInputWidget(QWidget):
             if all_inputs_lost_focus:
                 ip_address = ".".join(input_field.text() for input_field in self.segment_inputs)
                 self.ipCompleted.emit(ip_address)
-
+        
         return super().eventFilter(obj, event)
+    
 
 
 class IpLineEdit(QLineEdit):
@@ -117,3 +120,54 @@ class SubnetsTableWidget(QTableWidget):
         global_pos = self.mapToGlobal(rect.topRight())
         QToolTip.showText(global_pos, '已复制到剪贴板', self)
 
+
+# IP地址处理框
+class IPHandleWidget(QTabWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.init_ui()
+
+    def init_ui(self):
+        # 创建两个选项卡
+        ipFormatTrans_tab = QWidget()
+        ipSubnetsCalcu_tab = QWidget()
+
+
+        
+        # 将选项卡添加到QTabWidget
+        self.addTab(ipFormatTrans_tab, qta.icon('fa.retweet'), "格式转换")
+        self.addTab(ipSubnetsCalcu_tab, qta.icon('fa.gg'), "IP集合运算")
+        self.setTabToolTip(0,"支持IP地址掩码与范围之间格式转换")
+        self.setTabToolTip(1,"支持IP地址集合的合并、拆分等等")
+        self.tabBar().setDocumentMode(True)
+        self.tabBar().setExpanding(True)
+        
+        # self.setTabBar(QTabBar(self))
+        # self.tabBar().setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        # self.setTabText(0,"格式转换")
+        # self.setToolTip(0,"支持IP地址掩码与范围之间格式转换")
+        # self.setTabEnabled(True)
+        # self.setTabText(1,"IP集合运算")
+        # self.setToolTip(1,"支持IP地址集合的合并、拆分等等")
+        # self.setTabEnabled(True)
+        # self.setTabPosition(QTabWidget.TabPosition.North)
+        
+class oneInputoneOutput(QTabWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.init_ui()
+
+    def init_ui(self):
+        content_widget = QWidget()
+        content_layout = QGridLayout()
+        content_widget.setLayout(content_layout)
+        
+    
+    
+class twoInputoneOutput(QTabWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.init_ui()
+
+    def init_ui(self):
+        pass
