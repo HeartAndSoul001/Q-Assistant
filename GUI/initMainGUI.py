@@ -176,8 +176,8 @@ class homepage(QMainWindow):
 
     def showIPHandle(self):
         ip_handle_widget = IPHandleWidget()
+        # ip_handle_widget.setStyleSheet("background-color: red;")
         self.setCentralWidget(ip_handle_widget)
-        ip_handle_widget.showFullScreen()
         
     def showIpConvert(self):
         content_widget = QWidget()
