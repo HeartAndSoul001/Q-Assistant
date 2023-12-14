@@ -2,7 +2,7 @@ from PySide6.QtCore import (Qt, QEvent, QRegularExpression, Signal, QMimeData)
 from PySide6.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QLabel, QAbstractItemView, 
                                QTableWidget, QHeaderView, QTableWidgetItem, QToolTip, QTabWidget, 
                                QGridLayout, QTextEdit, QPushButton, QVBoxLayout)
-from PySide6.QtGui import (QRegularExpressionValidator)
+from PySide6.QtGui import (QRegularExpressionValidator,QClipboard)
 from IPTOOL.iptool import (ip_to_subnetlist)
 from GUI.initMainGUI import (QApplication)
 import qtawesome as qta
@@ -28,13 +28,15 @@ class IpInputWidget(QWidget):
         layout = QHBoxLayout()
 
         # 创建四个 QLineEdit 分别用于输入 IPv4 地址的四个段
-        self.segment_inputs = [IpLineEdit() for _ in range(4)]
+        self.segment_inputs = [QLineEdit() for _ in range(4)]
 
         for index, input_field in enumerate(self.segment_inputs):
             input_field.setMaxLength(3)  # 设置最大长度为3
             input_field.setValidator(self.ip_validator)
             input_field.setPlaceholderText(self.ip[index])  # 设置初始字段
             input_field.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            # 修改点击输入框的时候自动调整为拉丁文输入法
+            input_field.setInputMethodHints(Qt.InputMethodHint.ImhLatinOnly)
             input_field.installEventFilter(self)  
             
 
@@ -70,8 +72,8 @@ class IpInputWidget(QWidget):
     
 
 
-class IpLineEdit(QLineEdit):
-    pass
+# class IpLineEdit(QLineEdit):
+#     pass
 
 
 # 子网显示框
@@ -160,7 +162,7 @@ class IPHandleWidget(QTabWidget):
         ipFormatTrans_func_layout.addWidget(cidr_to_iprange)
         
         ipFormatTrans_layout.addWidget(ipFormatTrans_func,1)
-        ipFormatTrans_layout.addWidget(ipFormatTrans_content,3)
+        ipFormatTrans_layout.addWidget(ipFormatTrans_content,5)
         ipFormatTrans_tab.setLayout(ipFormatTrans_layout)
         
         
@@ -186,7 +188,7 @@ class IPHandleWidget(QTabWidget):
         ipSetCalcu_func_layout.addWidget(ipset_Not)
         
         ipSetCalcu_layout.addWidget(ipSetCalcu_func,1)
-        ipSetCalcu_layout.addWidget(ipSetCalcu_content,3)
+        ipSetCalcu_layout.addWidget(ipSetCalcu_content,5)
         
         
         
@@ -207,13 +209,13 @@ class oneInputoneOutput(QWidget):
         self.ipInput_tab_1 = QTextEdit(self.ipInput_box1)
         ## ip地址输入框功能按钮1----从剪贴板粘贴内容
         self.ipInput_1_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
-        self.ipInput_1_button_pastefromclipboard.clicked.connect(self.pastefromclipboard)
+        self.ipInput_1_button_pastefromclipboard.clicked.connect(lambda: self.pastefromclipboard(self.ipInput_tab_1))
         ## ip地址输入框功能按钮2----清除内容
-        ipInput_1_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
-        ipInput_1_button_clean.clicked.connect(self.textClean)
+        self.ipInput_1_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
+        self.ipInput_1_button_clean.clicked.connect(lambda: self.textClean(self.ipInput_tab_1))
         self.ipInput_box1_layout.addWidget(self.ipInput_tab_1,0,0,1,2)
         self.ipInput_box1_layout.addWidget(self.ipInput_1_button_pastefromclipboard,1,0,1,1)
-        self.ipInput_box1_layout.addWidget(ipInput_1_button_clean,1,1,1,1)
+        self.ipInput_box1_layout.addWidget(self.ipInput_1_button_clean,1,1,1,1)
         
         # ip地址输出区域
         self.ipOutput_box = QWidget(self)
@@ -222,16 +224,18 @@ class oneInputoneOutput(QWidget):
         self.ipOutput_box.setLayout(self.ipOutput_box_layout)
         
         ## ip地址多行输出框
-        ipOutput_tab = QTextEdit(self.ipOutput_box)
-        ipOutput_tab.setReadOnly(True)
+        self.ipOutput_tab = QTextEdit(self.ipOutput_box)
+        self.ipOutput_tab.setReadOnly(True)
         ## ip地址输入框功能按钮1----复制到剪贴板
-        ipOutput_button_copytoclipboard = QPushButton(qta.icon('fa.copy'),"复制内容到剪贴板")
+        self.ipOutput_button_copytoclipboard = QPushButton(qta.icon('fa.copy'),"复制内容到剪贴板")
+        self.ipOutput_button_copytoclipboard.clicked.connect(lambda: self.copytoclipboard(self.ipOutput_tab))
         ## ip地址输入框功能按钮2----清除内容
-        ipOutput_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
+        self.ipOutput_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
+        self.ipOutput_button_clean.clicked.connect(lambda: self.textClean(self.ipOutput_tab))
 
-        self.ipOutput_box_layout.addWidget(ipOutput_tab,0,0,1,2)
-        self.ipOutput_box_layout.addWidget(ipOutput_button_copytoclipboard,1,0,1,1)
-        self.ipOutput_box_layout.addWidget(ipOutput_button_clean,1,1,1,1)
+        self.ipOutput_box_layout.addWidget(self.ipOutput_tab,0,0,1,2)
+        self.ipOutput_box_layout.addWidget(self.ipOutput_button_copytoclipboard,1,0,1,1)
+        self.ipOutput_box_layout.addWidget(self.ipOutput_button_clean,1,1,1,1)
         
         
         content_layout.addWidget(self.ipInput_box1)
@@ -239,14 +243,23 @@ class oneInputoneOutput(QWidget):
         self.setLayout(content_layout)
         
     
-    def pastefromclipboard(self):
+    def pastefromclipboard(self, input_edit):
         clipboard = QApplication.clipboard()
         clipboard_text = clipboard.text()
         if clipboard_text:
-            self.ipInput_tab_1.setPlainText(clipboard_text)
+            input_edit.setPlainText(clipboard_text)
     
-    def textClean(self):
-        self.ipInput_tab_1.clear()
+    def textClean(self,input_edit):
+        input_edit.clear()
+        
+    def copytoclipboard(self,output_edit):
+        result_text = output_edit.toPlainText()
+        # 获取粘贴板
+        clipboard = QApplication.clipboard()
+
+        # 将文本复制到粘贴板
+        clipboard.setText(result_text, mode=QClipboard.Clipboard)
+        clipboard.setText(result_text, mode=QClipboard.Selection)
     
     
     
@@ -260,54 +273,79 @@ class twoInputoneOutput(QWidget):
         self.setLayout(content_layout)
 
         # ip地址输入区域1
-        ipInput_box1 = QWidget()
-        ipInput_box1_layout = QGridLayout()
-        ipInput_box1_layout.setSpacing(10)
-        ipInput_box1.setLayout(ipInput_box1_layout)
+        self.ipInput_box1 = QWidget()
+        self.ipInput_box1_layout = QGridLayout()
+        self.ipInput_box1_layout.setSpacing(10)
+        self.ipInput_box1.setLayout(self.ipInput_box1_layout)
         ## ip地址多行输入框
-        ipInput_tab_1 = QTextEdit()
+        self.ipInput_tab_1 = QTextEdit()
         ## ip地址输入框功能按钮1----从剪贴板粘贴内容
-        ipInput_1_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
+        self.ipInput_1_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
+        self.ipInput_1_button_pastefromclipboard.clicked.connect(lambda: self.pastefromclipboard(self.ipInput_tab_1))
         ## ip地址输入框功能按钮2----清除内容
-        ipInput_1_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
-        ipInput_box1_layout.addWidget(ipInput_tab_1,0,0,1,2)
-        ipInput_box1_layout.addWidget(ipInput_1_button_pastefromclipboard,1,0)
-        ipInput_box1_layout.addWidget(ipInput_1_button_clean,1,1)
+        self.ipInput_1_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
+        self.ipInput_1_button_clean.clicked.connect(lambda: self.textClean(self.ipInput_tab_1))
+        self.ipInput_box1_layout.addWidget(self.ipInput_tab_1,0,0,1,2)
+        self.ipInput_box1_layout.addWidget(self.ipInput_1_button_pastefromclipboard,1,0)
+        self.ipInput_box1_layout.addWidget(self.ipInput_1_button_clean,1,1)
 
         # ip地址输入区域2
-        ipInput_box2 = QWidget()
-        ipInput_box2_layout = QGridLayout()
-        ipInput_box2_layout.setSpacing(10)
-        ipInput_box2.setLayout(ipInput_box2_layout)
+        self.ipInput_box2 = QWidget()
+        self.ipInput_box2_layout = QGridLayout()
+        self.ipInput_box2_layout.setSpacing(10)
+        self.ipInput_box2.setLayout(self.ipInput_box2_layout)
         ## ip地址多行输入框2
-        ipInput_tab_2 = QTextEdit()
+        self.ipInput_tab_2 = QTextEdit()
         ## ip地址输入框功能按钮1----从剪贴板粘贴内容
-        ipInput_2_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
+        self.ipInput_2_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
+        self.ipInput_2_button_pastefromclipboard.clicked.connect(lambda: self.pastefromclipboard(self.ipInput_tab_2))
         ## ip地址输入框功能按钮2----清除内容
-        ipInput_2_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
-        ipInput_box2_layout.addWidget(ipInput_tab_2,0,0,1,2)
-        ipInput_box2_layout.addWidget(ipInput_2_button_pastefromclipboard,1,0)
-        ipInput_box2_layout.addWidget(ipInput_2_button_clean,1,1)
+        self.ipInput_2_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
+        self.ipInput_2_button_clean.clicked.connect(lambda: self.textClean(self.ipInput_tab_2))
+        self.ipInput_box2_layout.addWidget(self.ipInput_tab_2,0,0,1,2)
+        self.ipInput_box2_layout.addWidget(self.ipInput_2_button_pastefromclipboard,1,0)
+        self.ipInput_box2_layout.addWidget(self.ipInput_2_button_clean,1,1)
 
 
         # ip地址输出区域
-        ipOutput_box = QWidget()
-        ipOutput_box_layout = QGridLayout()
-        ipOutput_box_layout.setSpacing(10)
-        ipOutput_box.setLayout(ipOutput_box_layout)
+        self.ipOutput_box = QWidget()
+        self.ipOutput_box_layout = QGridLayout()
+        self.ipOutput_box_layout.setSpacing(10)
+        self.ipOutput_box.setLayout(self.ipOutput_box_layout)
         ## ip地址多行输出框
-        ipOutput_tab = QTextEdit()
-        ipOutput_tab.setReadOnly(True)
+        self.ipOutput_tab = QTextEdit()
+        self.ipOutput_tab.setReadOnly(True)
         ## ip地址输入框功能按钮1----复制到剪贴板
-        ipOutput_button_copytoclipboard = QPushButton(qta.icon('fa.copy'),"复制内容到剪贴板")
+        self.ipOutput_button_copytoclipboard = QPushButton(qta.icon('fa.copy'),"复制内容到剪贴板")
+        self.ipOutput_button_copytoclipboard.clicked.connect(lambda: self.copytoclipboard(self.ipOutput_tab))
         ## ip地址输入框功能按钮2----清除内容
-        ipOutput_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
+        self.ipOutput_button_clean = QPushButton(qta.icon('fa.undo'),"清除内容")
+        self.ipOutput_button_clean.clicked.connect(lambda: self.textClean(self.ipOutput_tab))
 
-        ipOutput_box_layout.addWidget(ipOutput_tab,0,0,1,2)
-        ipOutput_box_layout.addWidget(ipOutput_button_copytoclipboard,1,0)
-        ipOutput_box_layout.addWidget(ipOutput_button_clean,1,1)
+        self.ipOutput_box_layout.addWidget(self.ipOutput_tab,0,0,1,2)
+        self.ipOutput_box_layout.addWidget(self.ipOutput_button_copytoclipboard,1,0)
+        self.ipOutput_box_layout.addWidget(self.ipOutput_button_clean,1,1)
         
         
-        content_layout.addWidget(ipInput_box1,0,0,1,1)
-        content_layout.addWidget(ipInput_box2,0,1,1,1)
-        content_layout.addWidget(ipOutput_box,1,0,1,2)
+        content_layout.addWidget(self.ipInput_box1,0,0,1,1)
+        content_layout.addWidget(self.ipInput_box2,0,1,1,1)
+        content_layout.addWidget(self.ipOutput_box,1,0,1,2)
+        
+        
+    def pastefromclipboard(self, input_edit):
+        clipboard = QApplication.clipboard()
+        clipboard_text = clipboard.text()
+        if clipboard_text:
+            input_edit.setPlainText(clipboard_text)
+    
+    def textClean(self,input_edit):
+        input_edit.clear()
+        
+    def copytoclipboard(self,output_edit):
+        result_text = output_edit.toPlainText()
+        # 获取粘贴板
+        clipboard = QApplication.clipboard()
+
+        # 将文本复制到粘贴板
+        clipboard.setText(result_text, mode=QClipboard.Clipboard)
+        clipboard.setText(result_text, mode=QClipboard.Selection)
