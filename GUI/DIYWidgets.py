@@ -203,7 +203,7 @@ class IPHandleWidget(QTabWidget):
         self.ipset_Or.setText("IP地址集合--并集")
         self.ipset_Or.setToolTip("计算两段IP集合的合并网段")
         self.ipset_Or.clicked.connect(
-            lambda: self.ipset_and_func(self.ipSetCalcu_content.ipInput_tab_1.toPlainText(),
+            lambda: self.ipset_or_func(self.ipSetCalcu_content.ipInput_tab_1.toPlainText(),
             self.ipSetCalcu_content.ipInput_tab_2.toPlainText(),
             self.ipSetCalcu_content.ipOutput_tab))
         
@@ -212,7 +212,7 @@ class IPHandleWidget(QTabWidget):
         self.ipset_Not.setText("IP地址集合--差集")
         self.ipset_Not.setToolTip("计算IP集合a除去IP集合b剩下的网段")
         self.ipset_Not.clicked.connect(
-            lambda: self.ipset_and_func(self.ipSetCalcu_content.ipInput_tab_1.toPlainText(),
+            lambda: self.ipset_not_func(self.ipSetCalcu_content.ipInput_tab_1.toPlainText(),
             self.ipSetCalcu_content.ipInput_tab_2.toPlainText(),
             self.ipSetCalcu_content.ipOutput_tab))
         
@@ -280,6 +280,7 @@ class oneInputoneOutput(QWidget):
         self.ipInput_box1.setLayout(self.ipInput_box1_layout)
         ## ip地址多行输入框
         self.ipInput_tab_1 = QPlainTextEdit(self.ipInput_box1)
+        self.ipInput_tab_1.setInputMethodHints(Qt.InputMethodHint.ImhLatinOnly)
         ## ip地址输入框功能按钮1----从剪贴板粘贴内容
         self.ipInput_1_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
         self.ipInput_1_button_pastefromclipboard.clicked.connect(lambda: self.pastefromclipboard(self.ipInput_tab_1))
@@ -298,7 +299,6 @@ class oneInputoneOutput(QWidget):
         
         ## ip地址多行输出框
         self.ipOutput_tab = QPlainTextEdit(self.ipOutput_box)
-        self.ipOutput_tab.setLineWrapMode
         self.ipOutput_tab.setReadOnly(True)
         ## ip地址输入框功能按钮1----复制到剪贴板
         self.ipOutput_button_copytoclipboard = QPushButton(qta.icon('fa.copy'),"复制内容到剪贴板")
@@ -353,6 +353,7 @@ class twoInputoneOutput(QWidget):
         self.ipInput_box1.setLayout(self.ipInput_box1_layout)
         ## ip地址多行输入框
         self.ipInput_tab_1 = QPlainTextEdit()
+        self.ipInput_tab_1.setInputMethodHints(Qt.InputMethodHint.ImhLatinOnly)
         ## ip地址输入框功能按钮1----从剪贴板粘贴内容
         self.ipInput_1_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
         self.ipInput_1_button_pastefromclipboard.clicked.connect(lambda: self.pastefromclipboard(self.ipInput_tab_1))
@@ -370,6 +371,7 @@ class twoInputoneOutput(QWidget):
         self.ipInput_box2.setLayout(self.ipInput_box2_layout)
         ## ip地址多行输入框2
         self.ipInput_tab_2 = QPlainTextEdit()
+        self.ipInput_tab_2.setInputMethodHints(Qt.InputMethodHint.ImhLatinOnly)
         ## ip地址输入框功能按钮1----从剪贴板粘贴内容
         self.ipInput_2_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
         self.ipInput_2_button_pastefromclipboard.clicked.connect(lambda: self.pastefromclipboard(self.ipInput_tab_2))
@@ -423,3 +425,12 @@ class twoInputoneOutput(QWidget):
         # 将文本复制到粘贴板
         clipboard.setText(result_text, mode=QClipboard.Clipboard)
         clipboard.setText(result_text, mode=QClipboard.Selection)
+
+
+class IPDectectWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.init_ui()
+
+    def init_ui(self):
+        pass
