@@ -1,4 +1,4 @@
-from netaddr import IPNetwork,IPAddress,IPRange,IPSet,cidr_merge,iprange_to_cidrs
+from netaddr import IPNetwork,IPAddress,IPRange,IPSet
 import re
 
 def ip_to_subnetlist(ip_str):
@@ -27,9 +27,8 @@ def ip_to_subnetlist(ip_str):
 ## 10.1.1.2～10.1.1.3
 ## 10.1.1.2/31
 
-# 输入ip地址范围
-def iprangeStr_To_cidrStr(iprangeStr):
-    iprange = re.split(r'[^\d\.\-~/]',iprangeStr)
+def ipParse(ipStr):
+    ipList = re.split(r'[^\d\.\-~/]',ipStr)
     
     # 四种ip地址输入格式
     # IP地址
@@ -44,87 +43,76 @@ def iprangeStr_To_cidrStr(iprangeStr):
     # IP范围2 10.1.1.2～3   10.1.1.2-3
     ip_range_pattern2 = re.compile(r'^(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)(\-|~)(25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d))$')
     
-    result_cidrList = []
+    ip_set = IPSet()
     
-    for i in iprange:
-        print(i)
+    for i in ipList:
         if re.match(ip_pattern,i):
-            result_cidrList.append(IPNetwork(i+"/32"))
-            print("0")
+            ip_set.add(IPNetwork(i+"/32"))
         elif re.match(ip_cidr_pattern,i):
-            result_cidrList.append(IPNetwork(i))
-            print("1")
+            ip_set.add(IPNetwork(i))
         elif re.match(ip_range_pattern1,i):
             tempStr1 = re.split(r'[~\-]',i)
-            ip_to_cidrList2 = iprange_to_cidrs(IPAddress(tempStr1[0]),IPAddress(tempStr1[1]))
-            result_cidrList += ip_to_cidrList2
-                       
+            ip_range = IPRange(tempStr1[0],tempStr1[1])
+            ip_set.add(ip_range)               
         elif re.match(ip_range_pattern2,i):
             tempStr2 = re.split(r'[\-~\.]',i)
-            iprange_start = ".".join(tempStr2[0:4])
-            iprange_end = ".".join(tempStr2[0:3]+[tempStr2[-1]])
-            ip_to_cidrList1 = iprange_to_cidrs(IPAddress(iprange_start),IPAddress(iprange_end))
-            result_cidrList += ip_to_cidrList1
-        else:
-            print("4")
-            raise ValueError("错误的IP地址格式: {}".format(i))
-        print("\n")
-    result_cidrListStr = "\n".join([str(k) for k in cidr_merge(result_cidrList)])
-    return result_cidrListStr
-
-
-def cidrStr_To_iprangeStr(cidr):
-    ip_cidr = re.split(r'[^\d\.\-~/]',cidr)
-    
-    # 四种ip地址输入格式
-    # IP地址
-    ## 10.1.1.2
-    ip_pattern =re.compile(r'^(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d))$')
-    # IP掩码
-    ## 10.1.1.2/31
-    ip_cidr_pattern = re.compile(r'^(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)/(3[0-2]|[12]?\d))$')
-    # IP范围1
-    ## 10.1.1.2-10.1.1.3   10.1.1.2～10.1.1.3
-    ip_range_pattern1 = re.compile(r'^(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)(\-|~)((25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d))$')
-    # IP范围2 10.1.1.2～3   10.1.1.2-3
-    ip_range_pattern2 = re.compile(r'^(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)(\-|~)(25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d))$')
-    
-    result_ipSet = IPSet()
-    
-    for i in ip_cidr:
-        if re.match(ip_pattern,i):
-            result_ipSet.append(IPAddress(i))
-        elif re.match(ip_cidr_pattern,i):
-            result_ipSet.append(IPNetwork(i))
-        elif re.match(ip_range_pattern1,i):
-            pass
-            # tempStr1 = re.split(r'[\-~\.]',i)
-            # iprange_start = ".".join(tempStr1[0:4])
-            # iprange_end = ".".join(tempStr1[0:3]+[tempStr1[-1]])
-            # ip_to_cidrList1 = iprange_to_cidrs(IPAddress(iprange_start),IPAddress(iprange_end))
-            # result_cidrList += ip_to_cidrList1
-                       
-        elif re.match(ip_range_pattern2,i):
-            pass
-            # tempStr2 = re.split(r'[~\-]',i)
-            # ip_to_cidrList2 = iprange_to_cidrs(IPAddress(tempStr2[0]),IPAddress(tempStr2[1]))
-            # result_cidrList += ip_to_cidrList2
+            ip_range = IPRange(".".join(tempStr2[0:4]),".".join(tempStr2[0:3]+[tempStr2[-1]]))
+            ip_set.add(ip_range)
         else:
             raise ValueError("错误的IP地址格式: {}".format(i))
     
+    return ip_set
+
+
+# 输入ip地址范围
+def iprangeStr_To_cidrStr(ipStr):
+    try:
+        ip_set = ipParse(ipStr)
+    except ValueError as v:
+        raise ValueError(v)
+    
+    return ','.join(str(i) for i in ip_set.iter_cidrs())
+    
+
+
+def cidrStr_To_iprangeStr(ipStr):
+    try:
+        ip_set = ipParse(ipStr)
+    except ValueError as v:
+        raise ValueError(v)
+    
+    return ','.join(str(i) for i in ip_set.iter_ipranges())
+    
+def ipsetStr_and(ipsetStr_a,ipsetStr_b):
+    try:
+        ip_set_a = ipParse(ipsetStr_a)
+        ip_set_b = ipParse(ipsetStr_b)
+    except ValueError as v:
+        raise ValueError(v)
+    
+    return ','.join([str(i) for i in (ip_set_a & ip_set_b).iter_cidrs()])
+
+
+def ipsetStr_or(ipsetStr_a,ipsetStr_b):
+    try:
+        ip_set_a = ipParse(ipsetStr_a)
+        ip_set_b = ipParse(ipsetStr_b)
+    except ValueError as v:
+        raise ValueError(v)
+    
+    return ','.join([str(i) for i in (ip_set_a | ip_set_b).iter_cidrs()])
     
     
 
-def subnets_and(subnets_a,subnets_b):
-    pass
+def ipsetStr_not(ipsetStr_a,ipsetStr_b):
+    try:
+        ip_set_a = ipParse(ipsetStr_a)
+        ip_set_b = ipParse(ipsetStr_b)
+    except ValueError as v:
+        raise ValueError(v)
+    
+    return ','.join([str(i) for i in (ip_set_a - ip_set_b).iter_cidrs()])
 
-def subnets_or(subnets_a,subnets_b):
-    pass
 
-def subnets_not(subnets_a,subnets_b):
-    pass
-
-try:
-    iprangeStr_To_cidrStr("192.168.192.1-192.168.192.9,192.168.192.123-129\n192.168.192.0/22,192.168.192.25~192.168.192.28,100.100.1.1~100 192.168.1.1 1.1.1.1/32")
-except ValueError as v:
-    print(v)
+# print(subnets_not("192.168.1.10-99","192.168.1.20-192.168.1.199"))
+# print(iprangeStr_To_cidrStr("192.168.1.1,192.168.1.4/31 10.1.1.1-9;10.1.1.13-10.1.1.23\n1.1.1.1,1.1.1.2/30,178.1.244.1"))

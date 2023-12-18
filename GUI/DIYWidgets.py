@@ -1,9 +1,9 @@
 from PySide6.QtCore import (Qt, QEvent, QRegularExpression, Signal, QMimeData)
 from PySide6.QtWidgets import (QWidget, QLineEdit, QHBoxLayout, QLabel, QAbstractItemView, 
                                QTableWidget, QHeaderView, QTableWidgetItem, QToolTip, QTabWidget, 
-                               QGridLayout, QTextEdit, QPushButton, QVBoxLayout)
-from PySide6.QtGui import (QRegularExpressionValidator,QClipboard)
-from IPTOOL.iptool import (ip_to_subnetlist)
+                               QGridLayout, QTextEdit, QPushButton, QVBoxLayout,QMessageBox,QPlainTextEdit)
+from PySide6.QtGui import (QRegularExpressionValidator,QClipboard,QTextOption)
+from IPTOOL.iptool import (ip_to_subnetlist,iprangeStr_To_cidrStr,cidrStr_To_iprangeStr,ipsetStr_and,ipsetStr_or,ipsetStr_not)
 from GUI.initMainGUI import (QApplication)
 import qtawesome as qta
 
@@ -147,49 +147,84 @@ class IPHandleWidget(QTabWidget):
         self.tabBar().setExpanding(True)
         
         ipFormatTrans_layout = QHBoxLayout()
-        ipFormatTrans_content = oneInputoneOutput(ipFormatTrans_tab)
+        # IP地址输入框
+        self.ipFormatTrans_content = oneInputoneOutput(ipFormatTrans_tab)
         
-        ipFormatTrans_func = QWidget()
+        self.ipFormatTrans_func = QWidget()
         ipFormatTrans_func_layout = QVBoxLayout()
-        ipFormatTrans_func.setLayout(ipFormatTrans_func_layout)
+        self.ipFormatTrans_func.setLayout(ipFormatTrans_func_layout)
         ## 功能按钮1(地址范围-->CIDR)
-        iprange_to_cidr = QPushButton()
-        iprange_to_cidr.setText("地址范围 --> CIDR")
+        self.iprange_to_cidr_button = QPushButton()
+        self.iprange_to_cidr_button.setText("地址范围 --> CIDR")
+        self.iprange_to_cidr_button.setToolTip("以掩码格式显示所有输入IP")
+        self.iprange_to_cidr_button.clicked.connect(
+            lambda: self.iprange_to_cidr_func(self.ipFormatTrans_content.ipInput_tab_1.toPlainText(),
+            self.ipFormatTrans_content.ipOutput_tab))
         ## 功能按钮2(CIDR-->地址范围)
-        cidr_to_iprange = QPushButton()
-        cidr_to_iprange.setText("CIDR --> 地址范围")
-        ipFormatTrans_func_layout.addWidget(iprange_to_cidr)
-        ipFormatTrans_func_layout.addWidget(cidr_to_iprange)
+        self.cidr_to_iprange_button = QPushButton()
+        self.cidr_to_iprange_button.setText("CIDR --> 地址范围")
+        self.cidr_to_iprange_button.setToolTip("以IP范围格式显示所有输入IP")
+        self.cidr_to_iprange_button.clicked.connect(
+            lambda: self.cidr_to_iprange_func(self.ipFormatTrans_content.ipInput_tab_1.toPlainText(),
+            self.ipFormatTrans_content.ipOutput_tab))
         
-        ipFormatTrans_layout.addWidget(ipFormatTrans_func,1)
-        ipFormatTrans_layout.addWidget(ipFormatTrans_content,5)
+        ipFormatTrans_func_layout.addWidget(self.iprange_to_cidr_button)
+        ipFormatTrans_func_layout.addWidget(self.cidr_to_iprange_button)
+        
+        ipFormatTrans_layout.addWidget(self.ipFormatTrans_func,1)
+        ipFormatTrans_layout.addWidget(self.ipFormatTrans_content,5)
         ipFormatTrans_tab.setLayout(ipFormatTrans_layout)
         
         
         
         ipSetCalcu_layout = QHBoxLayout()
-        ipSetCalcu_content = twoInputoneOutput(ipSetCalcu_tab)
+        self.ipSetCalcu_content = twoInputoneOutput(ipSetCalcu_tab)
         ipSetCalcu_tab.setLayout(ipSetCalcu_layout)
         
-        ipSetCalcu_func = QWidget()
+        self.ipSetCalcu_func = QWidget()
         ipSetCalcu_func_layout = QVBoxLayout()
-        ipSetCalcu_func.setLayout(ipSetCalcu_func_layout)
+        self.ipSetCalcu_func.setLayout(ipSetCalcu_func_layout)
         ## 功能按钮1(IP地址集合--交集)
-        ipset_And = QPushButton()
-        ipset_And.setText("IP地址集合--交集")
+        self.ipset_And = QPushButton()
+        self.ipset_And.setText("IP地址集合--交集")
         ## 功能按钮2(IP地址集合--并集)
-        ipset_Or = QPushButton()
-        ipset_Or.setText("IP地址集合--并集")
+        self.ipset_Or = QPushButton()
+        self.ipset_Or.setText("IP地址集合--并集")
         ## 功能按钮3(IP地址集合--差集)
-        ipset_Not = QPushButton()
-        ipset_Not.setText("IP地址集合--差集")
-        ipSetCalcu_func_layout.addWidget(ipset_And)
-        ipSetCalcu_func_layout.addWidget(ipset_Or)
-        ipSetCalcu_func_layout.addWidget(ipset_Not)
+        self.ipset_Not = QPushButton()
+        self.ipset_Not.setText("IP地址集合--差集")
+        ipSetCalcu_func_layout.addWidget(self.ipset_And)
+        ipSetCalcu_func_layout.addWidget(self.ipset_Or)
+        ipSetCalcu_func_layout.addWidget(self.ipset_Not)
         
-        ipSetCalcu_layout.addWidget(ipSetCalcu_func,1)
-        ipSetCalcu_layout.addWidget(ipSetCalcu_content,5)
+        ipSetCalcu_layout.addWidget(self.ipSetCalcu_func,1)
+        ipSetCalcu_layout.addWidget(self.ipSetCalcu_content,5)
         
+    def iprange_to_cidr_func(self,intextStr,where_to_outtext):
+        try:
+            outtextStr = iprangeStr_To_cidrStr(intextStr)
+        except ValueError as v:
+            error_info = QMessageBox.critical(self,"IP地址输入错误",str(v),QMessageBox.StandardButton.Ok,QMessageBox.StandardButton.NoButton)
+            error_info.setWindowModality(Qt.WindowModality.ApplicationModal)
+        where_to_outtext.setPlainText(outtextStr)
+            
+    
+    def cidr_to_iprange_func(self,intextStr,where_to_outtext):
+        try:
+            outtextStr = cidrStr_To_iprangeStr(intextStr)
+        except ValueError as v:
+            error_info = QMessageBox.critical(self,"IP地址输入错误",str(v),QMessageBox.StandardButton.Ok,QMessageBox.StandardButton.NoButton)
+            error_info.setWindowModality(Qt.WindowModality.ApplicationModal)
+        where_to_outtext.setPlainText(outtextStr)
+    
+    def ipset_and_func():
+        pass
+    
+    def ipset_and_func():
+        pass
+        
+    def ipset_not_func():
+        pass
         
         
 class oneInputoneOutput(QWidget):
@@ -206,7 +241,7 @@ class oneInputoneOutput(QWidget):
         self.ipInput_box1_layout.setSpacing(10)
         self.ipInput_box1.setLayout(self.ipInput_box1_layout)
         ## ip地址多行输入框
-        self.ipInput_tab_1 = QTextEdit(self.ipInput_box1)
+        self.ipInput_tab_1 = QPlainTextEdit(self.ipInput_box1)
         ## ip地址输入框功能按钮1----从剪贴板粘贴内容
         self.ipInput_1_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
         self.ipInput_1_button_pastefromclipboard.clicked.connect(lambda: self.pastefromclipboard(self.ipInput_tab_1))
@@ -224,7 +259,8 @@ class oneInputoneOutput(QWidget):
         self.ipOutput_box.setLayout(self.ipOutput_box_layout)
         
         ## ip地址多行输出框
-        self.ipOutput_tab = QTextEdit(self.ipOutput_box)
+        self.ipOutput_tab = QPlainTextEdit(self.ipOutput_box)
+        self.ipOutput_tab.setLineWrapMode
         self.ipOutput_tab.setReadOnly(True)
         ## ip地址输入框功能按钮1----复制到剪贴板
         self.ipOutput_button_copytoclipboard = QPushButton(qta.icon('fa.copy'),"复制内容到剪贴板")
@@ -278,7 +314,7 @@ class twoInputoneOutput(QWidget):
         self.ipInput_box1_layout.setSpacing(10)
         self.ipInput_box1.setLayout(self.ipInput_box1_layout)
         ## ip地址多行输入框
-        self.ipInput_tab_1 = QTextEdit()
+        self.ipInput_tab_1 = QPlainTextEdit()
         ## ip地址输入框功能按钮1----从剪贴板粘贴内容
         self.ipInput_1_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
         self.ipInput_1_button_pastefromclipboard.clicked.connect(lambda: self.pastefromclipboard(self.ipInput_tab_1))
@@ -295,7 +331,7 @@ class twoInputoneOutput(QWidget):
         self.ipInput_box2_layout.setSpacing(10)
         self.ipInput_box2.setLayout(self.ipInput_box2_layout)
         ## ip地址多行输入框2
-        self.ipInput_tab_2 = QTextEdit()
+        self.ipInput_tab_2 = QPlainTextEdit()
         ## ip地址输入框功能按钮1----从剪贴板粘贴内容
         self.ipInput_2_button_pastefromclipboard = QPushButton(qta.icon('fa.paste'),"从剪贴板粘贴")
         self.ipInput_2_button_pastefromclipboard.clicked.connect(lambda: self.pastefromclipboard(self.ipInput_tab_2))
@@ -313,7 +349,7 @@ class twoInputoneOutput(QWidget):
         self.ipOutput_box_layout.setSpacing(10)
         self.ipOutput_box.setLayout(self.ipOutput_box_layout)
         ## ip地址多行输出框
-        self.ipOutput_tab = QTextEdit()
+        self.ipOutput_tab = QPlainTextEdit()
         self.ipOutput_tab.setReadOnly(True)
         ## ip地址输入框功能按钮1----复制到剪贴板
         self.ipOutput_button_copytoclipboard = QPushButton(qta.icon('fa.copy'),"复制内容到剪贴板")
