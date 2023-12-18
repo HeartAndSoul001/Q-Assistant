@@ -84,7 +84,6 @@ class homepage(QMainWindow):
         subnetTable_Button.setIcon(qta.icon('fa.calculator'))
         subnetTable_Button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         subnetTable_Button.setFixedSize(120,50)
-        # background-color: rgb(248,248,255)
         subnetTable_Button.setStyleSheet("QToolButton{border-radius:10px;}\
 		QToolButton:hover{background-color: rgb(230,230,250);}\
 		QToolButton:pressed{background-color: rgb(176,196,222);}\
@@ -176,7 +175,6 @@ class homepage(QMainWindow):
 
     def showIPHandle(self):
         ip_handle_widget = IPHandleWidget()
-        # ip_handle_widget.setStyleSheet("background-color: red;")
         self.setCentralWidget(ip_handle_widget)
         
 

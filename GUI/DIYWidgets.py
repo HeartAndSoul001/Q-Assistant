@@ -13,7 +13,8 @@ class IpInputWidget(QWidget):
     # 定义ipv4地址的4个段
     ip = ["192","168","0","1"]
     # 定义ipv4地址某一段的校验正则
-    ip_validator = QRegularExpressionValidator(QRegularExpression("((2[0-4]\d)|(25[0-5])|(1\d{2})|(\d{1,2}))"))
+    # ip_validator = QRegularExpressionValidator(QRegularExpression("((2[0-4]\d)|(25[0-5])|(1\d{2})|(\d{1,2}))"))
+    ip_validator = QRegularExpressionValidator(QRegularExpression("(25[0-5]|2[0-4]\d|1\d{2}|\d{1,2})"))
 
     # 是否输入完成
     ipCompleted = Signal(str)
@@ -149,6 +150,7 @@ class IPHandleWidget(QTabWidget):
         ipFormatTrans_layout = QHBoxLayout()
         # IP地址输入框
         self.ipFormatTrans_content = oneInputoneOutput(ipFormatTrans_tab)
+        self.ipFormatTrans_content.ipInput_tab_1.setPlaceholderText("可接受输入IP格式：192.168.192.1,192.168.192.2/30,192.168.192.4-5,192.168.192.6-192.168.192.7")
         
         self.ipFormatTrans_func = QWidget()
         ipFormatTrans_func_layout = QVBoxLayout()
@@ -179,20 +181,41 @@ class IPHandleWidget(QTabWidget):
         
         ipSetCalcu_layout = QHBoxLayout()
         self.ipSetCalcu_content = twoInputoneOutput(ipSetCalcu_tab)
+        self.ipSetCalcu_content.ipInput_tab_1.setPlaceholderText("可接受输入IP格式：192.168.192.1,192.168.192.2/30,192.168.192.4-5,192.168.192.6-192.168.192.7")
+        self.ipSetCalcu_content.ipInput_tab_2.setPlaceholderText("可接受输入IP格式：192.168.192.1,192.168.192.2/30,192.168.192.4-5,192.168.192.6-192.168.192.7")
         ipSetCalcu_tab.setLayout(ipSetCalcu_layout)
         
         self.ipSetCalcu_func = QWidget()
         ipSetCalcu_func_layout = QVBoxLayout()
         self.ipSetCalcu_func.setLayout(ipSetCalcu_func_layout)
+        
         ## 功能按钮1(IP地址集合--交集)
         self.ipset_And = QPushButton()
         self.ipset_And.setText("IP地址集合--交集")
+        self.ipset_And.setToolTip("计算两段IP集合的重合网段")
+        self.ipset_And.clicked.connect(
+            lambda: self.ipset_and_func(self.ipSetCalcu_content.ipInput_tab_1.toPlainText(),
+            self.ipSetCalcu_content.ipInput_tab_2.toPlainText(),
+            self.ipSetCalcu_content.ipOutput_tab))
+        
         ## 功能按钮2(IP地址集合--并集)
         self.ipset_Or = QPushButton()
         self.ipset_Or.setText("IP地址集合--并集")
+        self.ipset_Or.setToolTip("计算两段IP集合的合并网段")
+        self.ipset_Or.clicked.connect(
+            lambda: self.ipset_and_func(self.ipSetCalcu_content.ipInput_tab_1.toPlainText(),
+            self.ipSetCalcu_content.ipInput_tab_2.toPlainText(),
+            self.ipSetCalcu_content.ipOutput_tab))
+        
         ## 功能按钮3(IP地址集合--差集)
         self.ipset_Not = QPushButton()
         self.ipset_Not.setText("IP地址集合--差集")
+        self.ipset_Not.setToolTip("计算IP集合a除去IP集合b剩下的网段")
+        self.ipset_Not.clicked.connect(
+            lambda: self.ipset_and_func(self.ipSetCalcu_content.ipInput_tab_1.toPlainText(),
+            self.ipSetCalcu_content.ipInput_tab_2.toPlainText(),
+            self.ipSetCalcu_content.ipOutput_tab))
+        
         ipSetCalcu_func_layout.addWidget(self.ipset_And)
         ipSetCalcu_func_layout.addWidget(self.ipset_Or)
         ipSetCalcu_func_layout.addWidget(self.ipset_Not)
@@ -217,14 +240,29 @@ class IPHandleWidget(QTabWidget):
             error_info.setWindowModality(Qt.WindowModality.ApplicationModal)
         where_to_outtext.setPlainText(outtextStr)
     
-    def ipset_and_func():
-        pass
+    def ipset_and_func(self,intextStr1,intextStr2,where_to_outtext):
+        try:
+            outtextStr = ipsetStr_and(intextStr1,intextStr2)
+        except ValueError as v:
+            error_info = QMessageBox.critical(self,"IP地址输入错误",str(v),QMessageBox.StandardButton.Ok,QMessageBox.StandardButton.NoButton)
+            error_info.setWindowModality(Qt.WindowModality.ApplicationModal)
+        where_to_outtext.setPlainText(outtextStr)
     
-    def ipset_and_func():
-        pass
+    def ipset_or_func(self,intextStr1,intextStr2,where_to_outtext):
+        try:
+            outtextStr = ipsetStr_or(intextStr1,intextStr2)
+        except ValueError as v:
+            error_info = QMessageBox.critical(self,"IP地址输入错误",str(v),QMessageBox.StandardButton.Ok,QMessageBox.StandardButton.NoButton)
+            error_info.setWindowModality(Qt.WindowModality.ApplicationModal)
+        where_to_outtext.setPlainText(outtextStr)
         
-    def ipset_not_func():
-        pass
+    def ipset_not_func(self,intextStr1,intextStr2,where_to_outtext):
+        try:
+            outtextStr = ipsetStr_not(intextStr1,intextStr2)
+        except ValueError as v:
+            error_info = QMessageBox.critical(self,"IP地址输入错误",str(v),QMessageBox.StandardButton.Ok,QMessageBox.StandardButton.NoButton)
+            error_info.setWindowModality(Qt.WindowModality.ApplicationModal)
+        where_to_outtext.setPlainText(outtextStr)
         
         
 class oneInputoneOutput(QWidget):
