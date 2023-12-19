@@ -181,7 +181,7 @@ class homepage(QMainWindow):
     def showIpDetect(self):
         content_widget = QWidget()
         content_label = QLabel(content_widget)
-        content_label.setText("hello!sdfsfdsfdsfdsdfsfdsfsfadsfadsfasfsdf")
+        content_label.setText("尚在开发，可实现IP地址以及端口的批量探测")
         self.setCentralWidget(content_widget)
         
         
